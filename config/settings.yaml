@@ -9,16 +9,15 @@ project:
 
 # --- Fuentes de datos ---
 sources:
+  sources:
   disk:
     enabled: true
     paths:
-      # Carpeta de documentos de texto
-      - path: "C:\\elcor\\Documentos"
+      - path: "C:\\Users\\elcor\\OneDrive\\Documentos"
         type: "documents"
         extensions: [".txt", ".md", ".docx", ".pdf"]
 
-      # Carpeta de imágenes
-      - path: "C:\\elcor\\Imágenes"
+      - path: "C:\\Users\\elcor\\OneDrive\\Imágenes"
         type: "images"
         extensions: [".jpg", ".jpeg", ".png", ".bmp", ".heic"]
 
