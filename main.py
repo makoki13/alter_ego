@@ -1,4 +1,5 @@
 """
+https://console.groq.com/keys
 alterEgo - Punto de entrada principal.
 Uso:
   python main.py --collect disk
