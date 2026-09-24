@@ -52,32 +52,37 @@ class BiographyGenerator:
 
     def _build_context(self, records: list[dict[str, Any]]) -> str:
         """
-        Condensa los registros en un texto que quepa en el contexto del LLM.
-        Para el MVP: título + primeros 300 chars de cada registro.
+        Condensa los registros en un texto que quepa en el límite de tokens.
+        Groq free tier: ~8000 TPM. Objetivo: <20000 chars de contexto.
         """
         parts = []
 
-        # Separar por tipo para dar estructura
+        # Separar por tipo
         documents = [r for r in records if r["type"] == "document"]
         images = [r for r in records if r["type"] == "image_metadata"]
 
+        # LIMITAR cantidad para no exceder tokens
+        max_docs = 20
+        max_imgs = 20
+        max_chars_doc = 150
+        max_chars_img = 100
+
         if documents:
-            parts.append(f"=== DOCUMENTOS ({len(documents)}) ===")
-            for rec in documents:
+            parts.append(f"=== DOCUMENTOS ({len(documents)} encontrados, mostrando {min(max_docs, len(documents))}) ===")
+            for rec in documents[:max_docs]:
                 title = rec.get("title", "Sin título")
-                content = rec.get("content", "")[:300]
-                date = rec.get("date", "")
+                content = rec.get("content", "")[:max_chars_doc]
+                date = rec.get("date", "")[:10]  # solo YYYY-MM-DD
                 parts.append(f"[{date}] {title}: {content}")
 
         if images:
-            parts.append(f"\n=== IMÁGENES ({len(images)}) ===")
-            for rec in images:
+            parts.append(f"\n=== IMÁGENES ({len(images)} encontradas, mostrando {min(max_imgs, len(images))}) ===")
+            for rec in images[:max_imgs]:
                 title = rec.get("title", "Sin título")
-                content = rec.get("content", "")[:200]
+                content = rec.get("content", "")[:max_chars_img]
                 parts.append(f"- {title}: {content}")
 
-        return "\n\n".join(parts)
-
+        return "\n".join(parts)
     def _load_system_prompt(self) -> str:
         """Carga el prompt de sistema desde prompts/biography_system.md."""
         prompt_path = Path("prompts/biography_system.md")
