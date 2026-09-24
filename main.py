@@ -1,12 +1,13 @@
 """
 alterEgo - Punto de entrada principal.
-Uso: python main.py --collect disk
+Uso:
+  python main.py --collect disk
+  python main.py --generate biography
 """
 
 import sys
 from pathlib import Path
 
-# Asegurar que Python encuentra el paquete 'src'
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import argparse
@@ -16,12 +17,10 @@ import yaml
 
 
 def load_config() -> dict:
-    """Carga la configuración desde config/settings.yaml."""
     config_path = Path("config/settings.yaml")
     if not config_path.exists():
         print("❌ No se encuentra config/settings.yaml")
         sys.exit(1)
-
     with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
@@ -44,23 +43,20 @@ def run_disk_collector(config: dict):
     print(f"  alterEgo - Colector: {collector.name}")
     print(f"{'=' * 50}")
 
-    # Fase 1: Recolectar
     print("\n[1/2] Recolectando archivos...")
     count = collector.collect()
 
     if count == 0:
-        print("⚠ No se encontraron archivos. Revisa las rutas en settings.yaml.")
+        print("⚠ No se encontraron archivos.")
         return
 
-    # Fase 2: Procesar
     print("\n[2/2] Procesando archivos...")
     records = collector.process()
 
     if not records:
-        print("⚠ Se recolectaron archivos pero no se pudo procesar ninguno.")
+        print("⚠ No se pudo procesar ningún archivo.")
         return
 
-    # Guardar resultado
     output_file = processed_dir / "disk_records.json"
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
@@ -68,12 +64,44 @@ def run_disk_collector(config: dict):
     print(f"\n✅ Guardado en: {output_file}")
     print(f"   Registros: {len(records)}")
 
-    # Vista previa del primer registro
-    print("\n--- Primer registro ---")
-    preview = records[0].copy()
-    if len(preview.get("content", "")) > 200:
-        preview["content"] = preview["content"][:200] + "..."
-    print(json.dumps(preview, ensure_ascii=False, indent=2))
+
+def run_biography_generator(config: dict):
+    """Genera la biografía usando los datos procesados."""
+    from src.generators.biography import BiographyGenerator
+    from src.llm.factory import LLMFactory
+
+    # Cargar registros procesados
+    records_file = Path("data/processed/disk_records.json")
+    if not records_file.exists():
+        print("❌ No hay datos procesados. Ejecuta primero: python main.py --collect disk")
+        return
+
+    with open(records_file, encoding="utf-8") as f:
+        records = json.load(f)
+
+    if not records:
+        print("❌ El archivo de registros está vacío.")
+        return
+
+    print(f"\n{'=' * 50}")
+    print("  alterEgo - Generador de biografía")
+    print(f"{'=' * 50}")
+
+    # Inicializar LLM
+    llm_config = config.get("llm", {})
+    llm = LLMFactory.get(llm_config)
+    print(f"  🔌 Proveedor: {llm.get_model_name()}")
+
+    # Generar
+    generator = BiographyGenerator(llm, config)
+    biography = generator.generate(records)
+
+    # Vista previa
+    print(f"\n{'=' * 50}")
+    print("  Vista previa (primeros 500 chars):")
+    print(f"{'=' * 50}")
+    print(biography[:500])
+    print("...")
 
 
 def main():
@@ -82,8 +110,13 @@ def main():
         "--collect",
         type=str,
         choices=["disk", "gdrive", "x_twitter", "telegram", "all"],
-        default="disk",
         help="Fuente a recolectar",
+    )
+    parser.add_argument(
+        "--generate",
+        type=str,
+        choices=["biography"],
+        help="Qué generar",
     )
     args = parser.parse_args()
 
@@ -94,9 +127,10 @@ def main():
         run_disk_collector(config)
     elif args.collect == "all":
         run_disk_collector(config)
-        # Aquí se añadirán los demás colectores cuando estén implementados
+    elif args.generate == "biography":
+        run_biography_generator(config)
     else:
-        print(f"⚠ Colector '{args.collect}' aún no implementado. Próximamente.")
+        parser.print_help()
 
 
 if __name__ == "__main__":
