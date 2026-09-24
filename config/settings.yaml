@@ -1,0 +1,57 @@
+# ============================================
+# alterEgo - Configuración principal
+# ============================================
+
+project:
+  name: "alterEgo"
+  version: "0.1.0"
+  language: "es"
+
+# --- Fuentes de datos ---
+sources:
+  disk:
+    enabled: true
+    paths:
+      # Carpeta de documentos de texto
+      - path: "C:\\elcor\\Documentos"
+        type: "documents"
+        extensions: [".txt", ".md", ".docx", ".pdf"]
+
+      # Carpeta de imágenes
+      - path: "C:\\elcor\\Imágenes"
+        type: "images"
+        extensions: [".jpg", ".jpeg", ".png", ".bmp", ".heic"]
+
+    max_depth: 5
+    max_file_size_mb: 50
+
+  gdrive:
+    enabled: false
+    mode: "manual"
+    local_folder: "data/raw/gdrive"
+
+  x_twitter:
+    enabled: false
+    archive_path: "data/raw/x_twitter"
+
+  telegram:
+    enabled: false
+    export_path: "data/raw/telegram"
+
+# --- Almacenamiento vectorial ---
+vector_store:
+  provider: "faiss"
+  dimension: 768
+  path: "data/vectors"
+
+# --- LLM ---
+llm:
+  provider: "groq"
+  model: "llama-3.3-70b-versatile"
+  api_key_env: "GROQ_API_KEY"
+  max_tokens: 4096
+  temperature: 0.7
+
+# --- Salida ---
+output:
+  biography_path: "output/biografia.md"
