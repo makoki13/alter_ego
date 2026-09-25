@@ -1,10 +1,14 @@
 """
 https://console.groq.com/keys
+
+python -m venv .venv
+.venv bckslash Scripts\activate.bat # type: ignore
+
 alterEgo - Punto de entrada principal.
 Uso:
   python main.py --collect disk
   python main.py --generate biography
-"""
+"""  # noqa: W605
 
 import sys
 from pathlib import Path
