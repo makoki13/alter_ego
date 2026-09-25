@@ -1,26 +1,13 @@
-# ============================================
-# alterEgo - Configuración principal
-# ============================================
-
-project:
-  name: "alterEgo"
-  version: "0.1.0"
-  language: "es"
-
-# --- Fuentes de datos ---
 sources:
-  sources:
   disk:
     enabled: true
     paths:
       - path: "C:\\Users\\elcor\\OneDrive\\Documentos"
         type: "documents"
         extensions: [".txt", ".md", ".docx", ".pdf"]
-
       - path: "C:\\Users\\elcor\\OneDrive\\Imágenes"
         type: "images"
         extensions: [".jpg", ".jpeg", ".png", ".bmp", ".heic"]
-
     max_depth: 5
     max_file_size_mb: 50
 
@@ -30,27 +17,10 @@ sources:
     local_folder: "data/raw/gdrive"
 
   x_twitter:
-    enabled: false
+    enabled: true
     archive_path: "data/raw/x_twitter"
 
   telegram:
-    enabled: false
+    enabled: true
+    group_name: "Nombre de tu grupo"    # ← pon el nombre real
     export_path: "data/raw/telegram"
-
-# --- Almacenamiento vectorial ---
-vector_store:
-  provider: "faiss"
-  dimension: 768
-  path: "data/vectors"
-
-# --- LLM ---
-llm:
-  provider: "groq"
-  model: "openai/gpt-oss-120b"    # ← cambiado
-  api_key_env: "GROQ_API_KEY"
-  max_tokens: 4096
-  temperature: 0.7
-
-# --- Salida ---
-output:
-  biography_path: "output/biografia.md"

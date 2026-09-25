@@ -109,12 +109,90 @@ def run_biography_generator(config: dict):
     print("...")
 
 
+def run_x_collector(config: dict):
+    """Ejecuta el colector de X/Twitter."""
+    from src.collectors.x_collector import XCollector
+
+    source_cfg = config["sources"]["x_twitter"]
+    if not source_cfg.get("enabled", False):
+        print("❌ Colector de X desactivado en settings.yaml")
+        return
+
+    raw_dir = Path("data/raw/x_twitter")
+    processed_dir = Path("data/processed")
+
+    collector = XCollector(source_cfg, raw_dir, processed_dir)
+
+    print(f"\n{'=' * 50}")
+    print(f"  alterEgo - Colector: {collector.name}")
+    print(f"{'=' * 50}")
+
+    print("\n[1/2] Verificando export...")
+    count = collector.collect()
+
+    if count == 0:
+        return
+
+    print("\n[2/2] Procesando datos de X...")
+    records = collector.process()
+
+    if not records:
+        print("⚠ No se procesó ningún registro.")
+        return
+
+    output_file = processed_dir / "x_records.json"
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+
+    print(f"\n✅ Guardado en: {output_file}")
+    print(f"   Registros: {len(records)}")
+
+
+def run_telegram_collector(config: dict):
+    """Ejecuta el colector de Telegram."""
+    from src.collectors.telegram_collector import TelegramCollector
+
+    source_cfg = config["sources"]["telegram"]
+    if not source_cfg.get("enabled", False):
+        print("❌ Colector de Telegram desactivado en settings.yaml")
+        return
+
+    raw_dir = Path("data/raw/telegram")
+    processed_dir = Path("data/processed")
+
+    collector = TelegramCollector(source_cfg, raw_dir, processed_dir)
+
+    print(f"\n{'=' * 50}")
+    print(f"  alterEgo - Colector: {collector.name}")
+    print(f"{'=' * 50}")
+
+    print("\n[1/2] Verificando export...")
+    count = collector.collect()
+
+    if count == 0:
+        return
+
+    print("\n[2/2] Procesando mensajes...")
+    records = collector.process()
+
+    if not records:
+        print("⚠ No se procesó ningún registro.")
+        return
+
+    output_file = processed_dir / "telegram_records.json"
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+
+    print(f"\n✅ Guardado en: {output_file}")
+    print(f"   Registros: {len(records)}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="alterEgo - Tu gemelo digital")
     parser.add_argument(
         "--collect",
         type=str,
-        choices=["disk", "gdrive", "x_twitter", "telegram", "all"],
+        choices=["disk", "x_twitter", "telegram", "gdrive", "all"],
         help="Fuente a recolectar",
     )
     parser.add_argument(
@@ -130,13 +208,18 @@ def main():
 
     if args.collect == "disk":
         run_disk_collector(config)
+    elif args.collect == "x_twitter":
+        run_x_collector(config)
+    elif args.collect == "telegram":
+        run_telegram_collector(config)
     elif args.collect == "all":
         run_disk_collector(config)
+        run_x_collector(config)
+        run_telegram_collector(config)
     elif args.generate == "biography":
         run_biography_generator(config)
     else:
         parser.print_help()
-
 
 if __name__ == "__main__":
     main()
