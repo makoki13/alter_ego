@@ -1,9 +1,4 @@
 """
-https://console.groq.com/keys
-
-python -m venv .venv
-.venv bckslash Scripts\activate.bat # type: ignore
-
 alterEgo - Punto de entrada principal.
 Uso:
   python main.py --collect disk
