@@ -1,12 +1,13 @@
 """
 alterEgo - Generador de biografía.
-Toma los registros procesados y genera una biografía usando el LLM.
+Versión con RAG: busca registros relevantes antes de generar.
 """
 
 from pathlib import Path
 from typing import Any
 
 from src.llm.base_provider import BaseLLMProvider
+from src.rag.retriever import RAGRetriever
 
 
 class BiographyGenerator:
@@ -14,92 +15,108 @@ class BiographyGenerator:
 
     def __init__(self, llm: BaseLLMProvider, config: dict):
         self.llm = llm
-        self.output_path = Path(config.get("output", {}).get(
-            "biography_path", "output/biografia.md"
-        ))
+        self.config = config
+        self.output_path = Path(
+            config.get("output", {}).get("biography_path", "output/biografia.md")
+        )
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
     def generate(self, records: list[dict[str, Any]]) -> str:
-        """Genera la biografía a partir de los registros."""
+        """Genera la biografía usando RAG."""
 
-        print(f"  📚 Registros disponibles: {len(records)}")
+        rag_enabled = self.config.get("rag", {}).get("enabled", False)
 
-        # Construir el contexto condensado
-        context = self._build_context(records)
-        print(f"  📝 Contexto construido: {len(context)} caracteres")
+        if rag_enabled:
+            context_records = self._retrieve_with_rag(records)
+        else:
+            context_records = self._fallback_context(records)
 
-        # Cargar el system prompt
+        print(f"  📝 Registros para contexto: {len(context_records)}")
+
+        # Construir contexto
+        context = self._build_context(context_records)
+        print(f"  📝 Contexto: {len(context)} caracteres")
+
+        # Cargar system prompt
         system_prompt = self._load_system_prompt()
 
         # Preparar mensajes
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": (
-                "Aquí tienes toda la información recolectada sobre esta persona:\n\n"
+                "Aquí tienes la información REAL recolectada sobre esta persona. "
+                "Úsala como base. NO inventes datos que no estén aquí.\n\n"
                 f"{context}\n\n"
-                "Escribe ahora su biografía completa."
+                "Escribe ahora su biografía completa basándote SOLO en estos datos."
             )},
         ]
 
         # Llamar al LLM
         print(f"  🤖 Generando biografía con {self.llm.get_model_name()}...")
-        biography = self.llm.chat(messages, max_tokens=4096, temperature=0.8)
+        biography = self.llm.chat(messages, max_tokens=4096, temperature=0.7)
 
         # Guardar
         self._save(biography)
-
         return biography
 
+    def _retrieve_with_rag(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Usa RAG para obtener los registros más relevantes."""
+        retriever = RAGRetriever(self.config)
+
+        # Intentar cargar índice existente
+        if retriever.load_index():
+            print("  📊 Índice RAG cargado desde disco.")
+        else:
+            print("  📊 No hay índice. Construyendo...")
+            retriever.build_index(records)
+
+        # Obtener queries temáticas de la configuración
+        queries = self.config.get("rag", {}).get("biography_queries", [
+            "infancia y familia",
+            "trabajo y profesión",
+            "aficiones y deportes",
+        ])
+
+        return retriever.retrieve_for_biography(queries)
+
+    def _fallback_context(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Fallback sin RAG: primeros N registros."""
+        return records[:40]
+
     def _build_context(self, records: list[dict[str, Any]]) -> str:
-        """
-        Condensa los registros en un texto que quepa en el límite de tokens.
-        Groq free tier: ~8000 TPM. Objetivo: <20000 chars de contexto.
-        """
+        """Construye el texto de contexto a partir de registros."""
         parts = []
 
-        # Separar por tipo
-        documents = [r for r in records if r["type"] == "document"]
-        images = [r for r in records if r["type"] == "image_metadata"]
+        for rec in records:
+            source = rec.get("source", "?")
+            rtype = rec.get("type", "?")
+            title = rec.get("title", "")
+            content = rec.get("content", "")[:400]
+            date = rec.get("date", "")[:10]
+            score = rec.get("_relevance_score", "")
 
-        # LIMITAR cantidad para no exceder tokens
-        max_docs = 20
-        max_imgs = 20
-        max_chars_doc = 150
-        max_chars_img = 100
+            header = f"[{source}/{rtype}]"
+            if date:
+                header += f" [{date}]"
+            if score:
+                header += f" (relevancia: {score})"
+            if title:
+                header += f" {title}"
 
-        if documents:
-            parts.append(f"=== DOCUMENTOS ({len(documents)} encontrados, mostrando {min(max_docs, len(documents))}) ===")
-            for rec in documents[:max_docs]:
-                title = rec.get("title", "Sin título")
-                content = rec.get("content", "")[:max_chars_doc]
-                date = rec.get("date", "")[:10]  # solo YYYY-MM-DD
-                parts.append(f"[{date}] {title}: {content}")
+            parts.append(f"{header}\n{content}")
 
-        if images:
-            parts.append(f"\n=== IMÁGENES ({len(images)} encontradas, mostrando {min(max_imgs, len(images))}) ===")
-            for rec in images[:max_imgs]:
-                title = rec.get("title", "Sin título")
-                content = rec.get("content", "")[:max_chars_img]
-                parts.append(f"- {title}: {content}")
+        return "\n\n---\n\n".join(parts)
 
-        return "\n".join(parts)
     def _load_system_prompt(self) -> str:
-        """Carga el prompt de sistema desde prompts/biography_system.md."""
         prompt_path = Path("prompts/biography_system.md")
-
         if not prompt_path.exists():
-            # Prompt por defecto si no existe el archivo
             return (
-                "Eres un biógrafo experto. Escribes biografías en primera persona, "
-                "cálidas, detalladas y bien estructuradas. Usas la información "
-                "proporcionada para construir una narrativa coherente. "
-                "Si hay datos insuficientes, sé honesto y no inventes."
+                "Eres un biógrafo experto. Escribe en primera persona, en español. "
+                "Sé fiel a los datos proporcionados. No inventes."
             )
-
         return prompt_path.read_text(encoding="utf-8")
 
     def _save(self, text: str):
-        """Guarda la biografía en el archivo de salida."""
         with open(self.output_path, "w", encoding="utf-8") as f:
             f.write(text)
         print(f"  💾 Biografía guardada en: {self.output_path}")

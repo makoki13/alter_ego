@@ -24,3 +24,25 @@ sources:
     enabled: true
     group_name: "Nombre de tu grupo"    # ← pon el nombre real
     export_path: "data/raw/telegram"
+
+  # --- Almacenamiento vectorial ---
+vector_store:
+  provider: "faiss"
+  path: "data/vectors"
+  embedding_model: "paraphrase-multilingual-MiniLM-L12-v2"
+  dimension: 384
+  batch_size: 64
+
+# --- RAG ---
+rag:
+  enabled: true
+  top_k: 15
+  biography_queries:
+    - "infancia, niñez, familia, padres, pueblo, casa"
+    - "trabajo, profesión, carrera, empresa, ingeniería, redes"
+    - "aficiones, hobbies, deportes, ciclismo, bicicleta"
+    - "amigos, relaciones, personas importantes, pareja"
+    - "viajes, lugares, vacaciones, verano"
+    - "estudios, formación, universidad, aprendizaje"
+    - "tecnología, software, programación, informática"
+    - "momentos importantes, recuerdos, anécdotas"
