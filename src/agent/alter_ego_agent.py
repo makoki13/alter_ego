@@ -1,14 +1,9 @@
-"""
-alterEgo - Agente principal usando LangChain.
-Combina LLM + herramientas + memoria + prompts.
-"""
-
 from pathlib import Path
 from typing import Any
 
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain_core.messages import SystemMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+import yaml
+from langchain_core.messages import HumanMessage
+from langgraph.prebuilt import create_react_agent
 
 from src.llm.provider import get_llm
 from src.memory.vector_memory import VectorMemory
@@ -25,80 +20,84 @@ class AlterEgoAgent:
         self.llm = get_llm(config)
         self.memory = VectorMemory(config)
         self.profile = self._load_profile()
-        self.agent_executor: AgentExecutor | None = None
+        self.agent: Any = None  # ← Any, sin importar tipo específico
 
-    def setup(self):
+    def setup(self) -> None:
         """Inicializa el agente con herramientas y prompt."""
-        # Cargar memoria vectorial
         if not self.memory.load():
             raise RuntimeError(
                 "No hay índice vectorial. Ejecuta: python main.py --build-index"
             )
 
-        # Crear herramientas
         tools = [
             create_search_tool(self.memory),
             create_profile_tool(self.profile),
             create_date_search_tool(self.memory),
         ]
 
-        # Cargar prompt de identidad
         identity_prompt = self._load_identity_prompt()
 
-        # Prompt del agente
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", identity_prompt),
-            MessagesPlaceholder(variable_name="chat_history", optional=True),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
-
-        # Crear agente
-        agent = create_openai_tools_agent(self.llm, tools, prompt)
-
-        self.agent_executor = AgentExecutor(
-            agent=agent,
+        self.agent = create_react_agent(
+            model=self.llm,
             tools=tools,
-            verbose=True,
-            max_iterations=5,
-            handle_parsing_errors=True,
+            prompt=identity_prompt,
         )
 
-        print("  ✅ Agente alterEgo inicializado.")
+        print("  ✅ Agente alterEgo inicializado (LangGraph).")
+
+    def _get_agent(self) -> Any:
+        """Devuelve el agente, asegurando que está inicializado."""
+        if self.agent is None:
+            self.setup()
+        assert self.agent is not None
+        return self.agent
 
     def chat(self, user_input: str, chat_history: list | None = None) -> str:
         """Envía un mensaje al agente y devuelve la respuesta."""
-        if self.agent_executor is None:
-            self.setup()
+        agent = self._get_agent()
 
-        result = self.agent_executor.invoke({
-            "input": user_input,
-            "chat_history": chat_history or [],
-        })
+        messages: list[Any] = []
+        if chat_history:
+            for msg in chat_history:
+                if msg.get("role") == "user":
+                    messages.append(HumanMessage(content=msg["content"]))
 
-        return result.get("output", "")
+        messages.append(HumanMessage(content=user_input))
+
+        result = agent.invoke({"messages": messages})
+
+        ai_messages = [m for m in result["messages"] if m.type == "ai" and m.content]
+        return ai_messages[-1].content if ai_messages else ""
 
     def generate_biography(self) -> str:
-        """Genera la biografía usando el agente."""
-        if self.agent_executor is None:
-            self.setup()
+        """Genera la biografía usando el agente con múltiples búsquedas."""
+        agent = self._get_agent()
 
         prompt = (
-            "Usa todas tus herramientas para recopilar información sobre mí: "
-            "mi perfil, mis recuerdos de infancia, mi trabajo, mis aficiones, "
-            "mis relaciones, mis viajes. Con toda esa información, escribe "
-            "mi biografía completa en primera persona. Sé fiel a los datos."
+            "Quiero que escribas mi biografía completa. Para ello:\n"
+            "1. Primero usa get_profile para saber quién soy.\n"
+            "2. Luego usa search_memory con estas consultas (una por una):\n"
+            "   - 'infancia, familia, pueblo, casa'\n"
+            "   - 'trabajo, profesión, carrera, informática'\n"
+            "   - 'aficiones, ciclismo, bicicleta'\n"
+            "   - 'Beatles, música'\n"
+            "   - 'física, ciencia, religión'\n"
+            "   - 'viajes, lugares, vacaciones'\n"
+            "3. Con toda la información recopilada, escribe mi biografía "
+            "en primera persona. Sé fiel a los datos. No inventes. "
+            "Si no hay datos suficientes para un aspecto, omítelo o di "
+            "que no lo recuerdas con claridad.\n"
+            "4. Extensión: entre 600 y 1200 palabras. Formato Markdown."
         )
 
-        result = self.agent_executor.invoke({
-            "input": prompt,
-            "chat_history": [],
+        result = agent.invoke({
+            "messages": [HumanMessage(content=prompt)],
         })
 
-        return result.get("output", "")
+        ai_messages = [m for m in result["messages"] if m.type == "ai" and m.content]
+        return ai_messages[-1].content if ai_messages else ""
 
     def _load_profile(self) -> dict:
-        import yaml
         profile_path = Path("config/user_profile.yaml")
         if profile_path.exists():
             with open(profile_path, encoding="utf-8") as f:
@@ -110,10 +109,9 @@ class AlterEgoAgent:
         if prompt_path.exists():
             return prompt_path.read_text(encoding="utf-8")
 
-        # Fallback
         name = self.profile.get("name", "alterEgo")
         return (
             f"Eres {name}. Respondes como si fueras esta persona. "
-            f"Usas tus herramientas para buscar información real antes de responder. "
-            f"Nunca inventas datos. Si no sabes algo, lo dices."
+            f"Usas tus herramientas para buscar información real. "
+            f"Nunca inventas datos."
         )

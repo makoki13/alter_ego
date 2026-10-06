@@ -16,7 +16,7 @@ def get_llm(config: dict) -> ChatGroq:
 
     return ChatGroq(
         model=llm_config.get("model", "openai/gpt-oss-120b"),
-        api_key=os.getenv("GROQ_API_KEY"),
+        # api_key se lee automáticamente de la variable de entorno GROQ_API_KEY
         temperature=llm_config.get("temperature", 0.7),
         max_tokens=llm_config.get("max_tokens", 4096),
     )

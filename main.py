@@ -107,19 +107,16 @@ def run_build_index(config: dict):
 
 def run_biography(config: dict):
     """Genera biografía usando el agente LangChain."""
-    from harness.callbacks import AlterEgoCallback
     from src.agent.alter_ego_agent import AlterEgoAgent
 
     print(f"\n{'=' * 50}")
     print("  alterEgo - Generación de biografía")
     print(f"{'=' * 50}\n")
 
-    callback = AlterEgoCallback()
     agent = AlterEgoAgent(config)
     agent.setup()
 
-    # Generar
-    print("  🤖 Generando biografía...\n")
+    print("  🤖 Generando biografía (puede tardar 30-60 segundos)...\n")
     biography = agent.generate_biography()
 
     # Guardar
@@ -128,9 +125,9 @@ def run_biography(config: dict):
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(biography)
 
-    print(f"\n  💾 Guardado en: {output_path}")
-    print(f"\n  📊 {callback.summary()}")
     print(f"\n{'=' * 50}")
+    print(f"  💾 Guardado en: {output_path}")
+    print(f"{'=' * 50}\n")
     print(biography[:500])
     print("...")
 
@@ -200,6 +197,7 @@ def main():
     parser.add_argument("--collect", choices=["disk", "x_twitter", "telegram", "all"])
     parser.add_argument("--build-index", action="store_true")
     parser.add_argument("--query", type=str)
+    parser.add_argument("--generate", choices=["biography"])
     args = parser.parse_args()
 
     config = load_config()
@@ -211,6 +209,8 @@ def main():
         run_build_index(config)
     elif args.query:
         run_query(config, args.query)
+    elif args.generate == "biography":
+        run_biography(config)
     else:
         parser.print_help()
 
