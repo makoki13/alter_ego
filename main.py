@@ -1,13 +1,12 @@
 """
-alterEgo - Punto de entrada principal.
+alterEgo - Punto de entrada principal (LangChain edition).
 Uso:
   python main.py --collect disk
-  python main.py --collect telegram
-  python main.py --collect x_twitter
   python main.py --collect all
   python main.py --build-index
   python main.py --generate biography
-  python main.py --query "¿Dónde veraneaba de pequeño?"
+  python main.py --chat
+  python main.py --query "¿Dónde veraneaba?"
 """
 
 import sys
@@ -22,258 +21,190 @@ import yaml
 
 
 def load_config() -> dict:
-    config_path = Path("config/settings.yaml")
-    if not config_path.exists():
-        print("❌ No se encuentra config/settings.yaml")
-        sys.exit(1)
-    with open(config_path, encoding="utf-8") as f:
+    with open("config/settings.yaml", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
 def load_all_records() -> list[dict]:
-    """Carga y combina todos los registros procesados."""
+    """Combina todos los registros procesados."""
     processed_dir = Path("data/processed")
     all_records = []
-
     for json_file in sorted(processed_dir.glob("*_records.json")):
-        try:
-            with open(json_file, encoding="utf-8") as f:
-                records = json.load(f)
-            print(f"  📂 {json_file.name}: {len(records)} registros")
-            all_records.extend(records)
-        except Exception as e:
-            print(f"  ⚠ Error leyendo {json_file.name}: {e}")
-
-    print(f"  📚 Total combinado: {len(all_records)} registros\n")
+        with open(json_file, encoding="utf-8") as f:
+            records = json.load(f)
+        print(f"  📂 {json_file.name}: {len(records)} registros")
+        all_records.extend(records)
+    print(f"  📚 Total: {len(all_records)} registros\n")
     return all_records
 
 
-# ── COLECTORES ──
+# ── COLECTORES (sin cambios, usan nuestro código) ──
 
-def run_disk_collector(config: dict):
-    from src.collectors.disk_collector import DiskCollector
+def run_collect(config: dict, source: str):
+    """Ejecuta colectores."""
+    if source in ("disk", "all"):
+        from src.collectors.disk_collector import DiskCollector
+        cfg = config["sources"]["disk"]
+        collector = DiskCollector(cfg, Path("data/raw/disk"), Path("data/processed"))
+        print("\n  📂 Recolectando disco...")
+        count = collector.collect()
+        records = collector.process()
+        with open("data/processed/disk_records.json", "w", encoding="utf-8") as f:
+            json.dump(records, f, ensure_ascii=False, indent=2)
+        print(f"  ✅ {len(records)} registros\n")
 
-    source_cfg = config["sources"]["disk"]
-    if not source_cfg.get("enabled", False):
-        print("❌ Colector de disco desactivado.")
-        return
+    if source in ("x_twitter", "all"):
+        from src.collectors.x_collector import XCollector
+        cfg = config["sources"]["x_twitter"]
+        collector = XCollector(cfg, Path("data/raw/x_twitter"), Path("data/processed"))
+        print("\n  🐦 Recolectando X/Twitter...")
+        count = collector.collect()
+        if count > 0:
+            records = collector.process()
+            with open("data/processed/x_records.json", "w", encoding="utf-8") as f:
+                json.dump(records, f, ensure_ascii=False, indent=2)
+            print(f"  ✅ {len(records)} registros\n")
 
-    collector = DiskCollector(
-        source_cfg, Path("data/raw/disk"), Path("data/processed")
-    )
-
-    print(f"\n{'=' * 50}")
-    print(f"  alterEgo - Colector: {collector.name}")
-    print(f"{'=' * 50}")
-
-    print("\n[1/2] Recolectando archivos...")
-    count = collector.collect()
-    if count == 0:
-        print("⚠ No se encontraron archivos.")
-        return
-
-    print("\n[2/2] Procesando archivos...")
-    records = collector.process()
-    if not records:
-        return
-
-    output_file = Path("data/processed/disk_records.json")
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(records, f, ensure_ascii=False, indent=2)
-
-    print(f"\n✅ Guardado en: {output_file}  ({len(records)} registros)")
-
-
-def run_x_collector(config: dict):
-    from src.collectors.x_collector import XCollector
-
-    source_cfg = config["sources"]["x_twitter"]
-    if not source_cfg.get("enabled", False):
-        print("❌ Colector de X desactivado.")
-        return
-
-    collector = XCollector(
-        source_cfg, Path("data/raw/x_twitter"), Path("data/processed")
-    )
-
-    print(f"\n{'=' * 50}")
-    print(f"  alterEgo - Colector: {collector.name}")
-    print(f"{'=' * 50}")
-
-    print("\n[1/2] Verificando export...")
-    count = collector.collect()
-    if count == 0:
-        return
-
-    print("\n[2/2] Procesando datos de X...")
-    records = collector.process()
-    if not records:
-        return
-
-    output_file = Path("data/processed/x_records.json")
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(records, f, ensure_ascii=False, indent=2)
-
-    print(f"\n✅ Guardado en: {output_file}  ({len(records)} registros)")
+    if source in ("telegram", "all"):
+        from src.collectors.telegram_collector import TelegramCollector
+        cfg = config["sources"]["telegram"]
+        collector = TelegramCollector(cfg, Path("data/raw/telegram"), Path("data/processed"))
+        print("\n  💬 Recolectando Telegram...")
+        count = collector.collect()
+        if count > 0:
+            records = collector.process()
+            with open("data/processed/telegram_records.json", "w", encoding="utf-8") as f:
+                json.dump(records, f, ensure_ascii=False, indent=2)
+            print(f"  ✅ {len(records)} registros\n")
 
 
-def run_telegram_collector(config: dict):
-    from src.collectors.telegram_collector import TelegramCollector
-
-    source_cfg = config["sources"]["telegram"]
-    if not source_cfg.get("enabled", False):
-        print("❌ Colector de Telegram desactivado.")
-        return
-
-    collector = TelegramCollector(
-        source_cfg, Path("data/raw/telegram"), Path("data/processed")
-    )
-
-    print(f"\n{'=' * 50}")
-    print(f"  alterEgo - Colector: {collector.name}")
-    print(f"{'=' * 50}")
-
-    print("\n[1/2] Verificando export...")
-    count = collector.collect()
-    if count == 0:
-        return
-
-    print("\n[2/2] Procesando mensajes...")
-    records = collector.process()
-    if not records:
-        return
-
-    output_file = Path("data/processed/telegram_records.json")
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(records, f, ensure_ascii=False, indent=2)
-
-    print(f"\n✅ Guardado en: {output_file}  ({len(records)} registros)")
-
-
-# ── RAG ──
+# ── ÍNDICE VECTORIAL ──
 
 def run_build_index(config: dict):
-    """Construye el índice vectorial con todos los registros."""
-    from src.rag.retriever import RAGRetriever
+    """Construye el índice FAISS usando LangChain."""
+    from src.memory.vector_memory import VectorMemory
 
     print(f"\n{'=' * 50}")
-    print("  alterEgo - Construir índice RAG")
+    print("  alterEgo - Construir índice vectorial")
     print(f"{'=' * 50}\n")
 
     records = load_all_records()
     if not records:
-        print("❌ No hay registros. Ejecuta primero: python main.py --collect all")
+        print("❌ No hay registros. Ejecuta: python main.py --collect all")
         return
 
-    retriever = RAGRetriever(config)
-    retriever.build_index(records)
-
-    print("\n✅ Índice RAG construido correctamente.")
-    print("   Ya puedes usar: python main.py --generate biography")
+    memory = VectorMemory(config)
+    memory.build_from_records(records)
+    print("\n✅ Índice construido.")
 
 
-def run_query(config: dict, query: str):
-    """Prueba una consulta contra el índice RAG."""
-    from src.rag.retriever import RAGRetriever
+# ── GENERAR BIOGRAFÍA ──
+
+def run_biography(config: dict):
+    """Genera biografía usando el agente LangChain."""
+    from harness.callbacks import AlterEgoCallback
+    from src.agent.alter_ego_agent import AlterEgoAgent
 
     print(f"\n{'=' * 50}")
-    print("  alterEgo - Consulta RAG")
+    print("  alterEgo - Generación de biografía")
     print(f"{'=' * 50}\n")
 
-    retriever = RAGRetriever(config)
-    if not retriever.load_index():
-        print("❌ No hay índice. Ejecuta primero: python main.py --build-index")
+    callback = AlterEgoCallback()
+    agent = AlterEgoAgent(config)
+    agent.setup()
+
+    # Generar
+    print("  🤖 Generando biografía...\n")
+    biography = agent.generate_biography()
+
+    # Guardar
+    output_path = Path("output/biografia.md")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(biography)
+
+    print(f"\n  💾 Guardado en: {output_path}")
+    print(f"\n  📊 {callback.summary()}")
+    print(f"\n{'=' * 50}")
+    print(biography[:500])
+    print("...")
+
+
+# ── CHAT ──
+
+def run_chat(config: dict):
+    """Chat interactivo con alterEgo."""
+    from src.agent.alter_ego_agent import AlterEgoAgent
+
+    print(f"\n{'=' * 50}")
+    print("  🎭 alterEgo - Chat")
+    print("  Escribe 'salir' para terminar.")
+    print(f"{'=' * 50}\n")
+
+    agent = AlterEgoAgent(config)
+    agent.setup()
+
+    chat_history = []
+
+    while True:
+        user_input = input("\n  Tú: ").strip()
+        if user_input.lower() in ("salir", "exit", "quit"):
+            print("\n  👋 Hasta pronto.")
+            break
+
+        response = agent.chat(user_input, chat_history)
+        print(f"\n  alterEgo: {response}")
+
+        chat_history.append({"role": "user", "content": user_input})
+        chat_history.append({"role": "assistant", "content": response})
+
+
+# ── QUERY ──
+
+def run_query(config: dict, query: str):
+    """Consulta directa al índice vectorial."""
+    from src.memory.vector_memory import VectorMemory
+
+    memory = VectorMemory(config)
+    if not memory.load():
+        print("❌ No hay índice. Ejecuta: python main.py --build-index")
         return
 
-    results = retriever.retrieve(query, top_k=5)
-
+    results = memory.search(query, top_k=5)
     print(f"\n  Consulta: \"{query}\"")
     print(f"  Resultados: {len(results)}\n")
 
-    for i, rec in enumerate(results, 1):
-        score = rec.get("_relevance_score", "?")
-        source = rec.get("source", "?")
-        content = rec.get("content", "")[:150]
-        print(f"  [{i}] ({score}) [{source}] {content}...")
+    for i, doc in enumerate(results, 1):
+        source = doc.metadata.get("source", "?")
+        date = doc.metadata.get("date", "")[:10]
+        print(f"  [{i}] [{source}] [{date}] {doc.page_content[:150]}...")
         print()
-
-
-# ── GENERADORES ──
-
-def run_biography_generator(config: dict):
-    from src.generators.biography import BiographyGenerator
-    from src.llm.factory import LLMFactory
-
-    print(f"\n{'=' * 50}")
-    print("  alterEgo - Generador de biografía")
-    print(f"{'=' * 50}\n")
-
-    records = load_all_records()
-    if not records:
-        print("❌ No hay registros. Ejecuta primero: python main.py --collect all")
-        return
-
-    llm_config = config.get("llm", {})
-    llm = LLMFactory.get(llm_config)
-    print(f"  🔌 Proveedor: {llm.get_model_name()}")
-
-    generator = BiographyGenerator(llm, config)
-    biography = generator.generate(records)
-
-    print(f"\n{'=' * 50}")
-    print("  Vista previa (primeros 500 chars):")
-    print(f"{'=' * 50}")
-    print(biography[:500])
-    print("...")
 
 
 # ── MAIN ──
 
 def main():
-    parser = argparse.ArgumentParser(description="alterEgo - Tu gemelo digital")
-    parser.add_argument(
-        "--collect",
-        type=str,
-        choices=["disk", "x_twitter", "telegram", "gdrive", "all"],
-        help="Fuente a recolectar",
-    )
-    parser.add_argument(
-        "--build-index",
-        action="store_true",
-        help="Construir índice RAG (FAISS)",
-    )
-    parser.add_argument(
-        "--query",
-        type=str,
-        help="Consultar el índice RAG",
-    )
-    parser.add_argument(
-        "--generate",
-        type=str,
-        choices=["biography"],
-        help="Qué generar",
-    )
+    parser = argparse.ArgumentParser(description="🎭 alterEgo")
+    parser.add_argument("--collect", choices=["disk", "x_twitter", "telegram", "all"])
+    parser.add_argument("--build-index", action="store_true")
+    parser.add_argument("--generate", choices=["biography"])
+    parser.add_argument("--chat", action="store_true")
+    parser.add_argument("--query", type=str)
     args = parser.parse_args()
 
     config = load_config()
-    print(f"\n🎭 alterEgo v{config['project']['version']}")
+    print(f"\n🎭 alterEgo v{config['project']['version']} (LangChain)")
 
-    if args.collect == "disk":
-        run_disk_collector(config)
-    elif args.collect == "x_twitter":
-        run_x_collector(config)
-    elif args.collect == "telegram":
-        run_telegram_collector(config)
-    elif args.collect == "all":
-        run_disk_collector(config)
-        run_x_collector(config)
-        run_telegram_collector(config)
+    if args.collect:
+        run_collect(config, args.collect)
     elif args.build_index:
         run_build_index(config)
+    elif args.generate == "biography":
+        run_biography(config)
+    elif args.chat:
+        run_chat(config)
     elif args.query:
         run_query(config, args.query)
-    elif args.generate == "biography":
-        run_biography_generator(config)
     else:
         parser.print_help()
 
