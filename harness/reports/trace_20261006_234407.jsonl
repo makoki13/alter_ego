@@ -1,0 +1,46 @@
+{"timestamp": "2026-10-06T23:44:56.622947", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:56.782798", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:56.784018", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:56.785493", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:56.787616", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:56.788796", "event": "chain_end", "data": {"output_count": 2}}
+{"timestamp": "2026-10-06T23:44:56.791693", "event": "llm_start", "data": {"model": "ChatGroq", "prompts_count": 1}}
+{"timestamp": "2026-10-06T23:44:58.368839", "event": "llm_end", "data": {"duration_ms": 1577.12, "token_usage": {"completion_tokens": 55, "prompt_tokens": 601, "total_tokens": 656, "completion_time": 0.115171214, "completion_tokens_details": {"reasoning_tokens": 36}, "prompt_time": 0.030045835, "prompt_tokens_details": null, "queue_time": 0.315294341, "total_time": 0.145217049}}}
+{"timestamp": "2026-10-06T23:44:58.371020", "event": "chain_end", "data": {"output_type": "AIMessage"}}
+{"timestamp": "2026-10-06T23:44:58.372269", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:44:58.373717", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.374978", "event": "chain_end", "data": {"output_count": 1}}
+{"timestamp": "2026-10-06T23:44:58.376169", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:44:58.378422", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.381589", "event": "tool_start", "data": {"tool": "get_profile", "input": "{}"}}
+{"timestamp": "2026-10-06T23:44:58.385022", "event": "tool_end", "data": {"tool": "get_profile", "duration_ms": 2.78, "output_preview": "content='Nombre: Pablo Prieto\\nProfesión: Informático\\nTono: cercano, directo, con humor\\nAficiones: Beatles, Física cuántica y relatividad, Historia de las religiones, ciclismo de ultradistancia, tec"}}
+{"timestamp": "2026-10-06T23:44:58.395357", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:44:58.397769", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.398865", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.400420", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.401894", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.403574", "event": "chain_end", "data": {"output_count": 4}}
+{"timestamp": "2026-10-06T23:44:58.408858", "event": "llm_start", "data": {"model": "ChatGroq", "prompts_count": 1}}
+{"timestamp": "2026-10-06T23:44:58.838828", "event": "llm_end", "data": {"duration_ms": 429.96, "token_usage": {"completion_tokens": 56, "prompt_tokens": 692, "total_tokens": 748, "completion_time": 0.119401295, "completion_tokens_details": {"reasoning_tokens": 31}, "prompt_time": 0.026843625, "prompt_tokens_details": null, "queue_time": 0.088960253, "total_time": 0.14624492}}}
+{"timestamp": "2026-10-06T23:44:58.842524", "event": "chain_end", "data": {"output_type": "AIMessage"}}
+{"timestamp": "2026-10-06T23:44:58.843533", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:44:58.844983", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.845977", "event": "chain_end", "data": {"output_count": 1}}
+{"timestamp": "2026-10-06T23:44:58.846921", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:44:58.848557", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.854288", "event": "tool_start", "data": {"tool": "search_memory", "input": "{'query': 'ciclismo'}"}}
+{"timestamp": "2026-10-06T23:44:58.958444", "event": "tool_end", "data": {"tool": "search_memory", "duration_ms": 104.01, "output_preview": "content='[disk] [2026-08-30] DOC-20251117-WA0011. 1\\n \\n \\n \\n \\nCiclismo\\n \\nde\\n \\nUltradistancia:\\n \\n \\nAnatomía\\n \\ndel\\n \\nEsfuerzo\\n \\ny\\n \\nPrevención\\n \\nde\\n \\nLesiones\\n \\nPor\\n \\nPablo\\n \\"}}
+{"timestamp": "2026-10-06T23:44:58.960957", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:44:58.962676", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.963715", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.965366", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.967151", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:44:58.969055", "event": "chain_end", "data": {"output_count": 6}}
+{"timestamp": "2026-10-06T23:44:58.973547", "event": "llm_start", "data": {"model": "ChatGroq", "prompts_count": 1}}
+{"timestamp": "2026-10-06T23:45:00.805201", "event": "llm_end", "data": {"duration_ms": 1831.64, "token_usage": {"completion_tokens": 516, "prompt_tokens": 1133, "total_tokens": 1649, "completion_time": 1.352494098, "completion_tokens_details": {"reasoning_tokens": 216}, "prompt_time": 0.034336699, "prompt_tokens_details": {"cached_tokens": 512}, "queue_time": 0.299323269, "total_time": 1.386830797}}}
+{"timestamp": "2026-10-06T23:45:00.806743", "event": "chain_end", "data": {"output_type": "AIMessage"}}
+{"timestamp": "2026-10-06T23:45:00.807685", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:45:00.808832", "event": "chain_start", "data": {"chain": "internal"}}
+{"timestamp": "2026-10-06T23:45:00.809785", "event": "chain_end", "data": {"output_preview": "__end__"}}
+{"timestamp": "2026-10-06T23:45:00.810756", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:45:00.812161", "event": "chain_end", "data": {"output_keys": ["messages"]}}

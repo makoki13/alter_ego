@@ -1,0 +1,31 @@
+{"timestamp": "2026-10-06T23:40:07.940396", "event": "llm_start", "data": {"model": "ChatGroq", "prompts_count": 1}}
+{"timestamp": "2026-10-06T23:40:09.567841", "event": "llm_end", "data": {"duration_ms": 1627.43, "token_usage": {"completion_tokens": 45, "prompt_tokens": 522, "total_tokens": 567, "completion_time": 0.095017057, "completion_tokens_details": {"reasoning_tokens": 26}, "prompt_time": 0.054025333, "prompt_tokens_details": null, "queue_time": 0.32726764, "total_time": 0.14904239}}}
+{"timestamp": "2026-10-06T23:40:09.569636", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:09.573070", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:09.578236", "event": "tool_start", "data": {"tool": "get_profile", "input": "{}"}}
+{"timestamp": "2026-10-06T23:40:09.582117", "event": "tool_end", "data": {"tool": "get_profile", "duration_ms": 3.77, "output_preview": "content='Nombre: Pablo Prieto\\nProfesión: Informático\\nTono: cercano, directo, con humor\\nAficiones: Beatles, Física cuántica y relatividad, Historia de las religiones, ciclismo de ultradistancia, tec"}}
+{"timestamp": "2026-10-06T23:40:09.590442", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:09.595136", "event": "llm_start", "data": {"model": "ChatGroq", "prompts_count": 1}}
+{"timestamp": "2026-10-06T23:40:10.219542", "event": "llm_end", "data": {"duration_ms": 624.38, "token_usage": {"completion_tokens": 53, "prompt_tokens": 613, "total_tokens": 666, "completion_time": 0.111817245, "completion_tokens_details": {"reasoning_tokens": 24}, "prompt_time": 0.074180044, "prompt_tokens_details": {"cached_tokens": 512}, "queue_time": 0.088329462, "total_time": 0.185997289}}}
+{"timestamp": "2026-10-06T23:40:10.221421", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:10.223173", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:10.226947", "event": "tool_start", "data": {"tool": "search_memory", "input": "{'query': 'ciclismo'}"}}
+{"timestamp": "2026-10-06T23:40:10.303128", "event": "tool_end", "data": {"tool": "search_memory", "duration_ms": 76.04, "output_preview": "content='[disk] [2026-08-30] DOC-20251117-WA0011. 1\\n \\n \\n \\n \\nCiclismo\\n \\nde\\n \\nUltradistancia:\\n \\n \\nAnatomía\\n \\ndel\\n \\nEsfuerzo\\n \\ny\\n \\nPrevención\\n \\nde\\n \\nLesiones\\n \\nPor\\n \\nPablo\\n \\"}}
+{"timestamp": "2026-10-06T23:40:10.306280", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:10.312199", "event": "llm_start", "data": {"model": "ChatGroq", "prompts_count": 1}}
+{"timestamp": "2026-10-06T23:40:13.456420", "event": "llm_end", "data": {"duration_ms": 3144.21, "token_usage": {"completion_tokens": 1299, "prompt_tokens": 1054, "total_tokens": 2353, "completion_time": 2.710402007, "completion_tokens_details": {"reasoning_tokens": 77}, "prompt_time": 0.049742735, "prompt_tokens_details": null, "queue_time": 0.048972958, "total_time": 2.760144742}}}
+{"timestamp": "2026-10-06T23:40:13.458528", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:13.460691", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:13.462701", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:18.140857", "event": "llm_start", "data": {"model": "ChatGroq", "prompts_count": 1}}
+{"timestamp": "2026-10-06T23:40:18.728454", "event": "llm_end", "data": {"duration_ms": 587.58, "token_usage": {"completion_tokens": 102, "prompt_tokens": 529, "total_tokens": 631, "completion_time": 0.223241793, "completion_tokens_details": {"reasoning_tokens": 73}, "prompt_time": 0.025054439, "prompt_tokens_details": null, "queue_time": 0.205338821, "total_time": 0.248296232}}}
+{"timestamp": "2026-10-06T23:40:18.731572", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:18.733550", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:18.738444", "event": "tool_start", "data": {"tool": "search_memory", "input": "{'query': 'ciclismo'}"}}
+{"timestamp": "2026-10-06T23:40:18.813691", "event": "tool_end", "data": {"tool": "search_memory", "duration_ms": 75.03, "output_preview": "content='[disk] [2026-08-30] DOC-20251117-WA0011. 1\\n \\n \\n \\n \\nCiclismo\\n \\nde\\n \\nUltradistancia:\\n \\n \\nAnatomía\\n \\ndel\\n \\nEsfuerzo\\n \\ny\\n \\nPrevención\\n \\nde\\n \\nLesiones\\n \\nPor\\n \\nPablo\\n \\"}}
+{"timestamp": "2026-10-06T23:40:18.816154", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:18.820906", "event": "llm_start", "data": {"model": "ChatGroq", "prompts_count": 1}}
+{"timestamp": "2026-10-06T23:40:20.967505", "event": "llm_end", "data": {"duration_ms": 2146.58, "token_usage": {"completion_tokens": 917, "prompt_tokens": 970, "total_tokens": 1887, "completion_time": 1.925526413, "completion_tokens_details": {"reasoning_tokens": 118}, "prompt_time": 0.047282092, "prompt_tokens_details": null, "queue_time": 0.047979624, "total_time": 1.9728085050000002}}}
+{"timestamp": "2026-10-06T23:40:20.969542", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:20.971325", "event": "chain_end", "data": {"output_keys": ["messages"]}}
+{"timestamp": "2026-10-06T23:40:20.972673", "event": "chain_end", "data": {"output_keys": ["messages"]}}

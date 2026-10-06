@@ -135,13 +135,18 @@ def run_biography(config: dict):
 # ── CHAT ──
 
 def run_chat(config: dict):
-    """Chat interactivo con alterEgo."""
+    """Chat interactivo con alterEgo + observabilidad."""
+    from harness.callbacks import AlterEgoCallback
     from src.agent.alter_ego_agent import AlterEgoAgent
 
     print(f"\n{'=' * 50}")
     print("  🎭 alterEgo - Chat interactivo")
     print("  Escribe 'salir' para terminar.")
+    print("  Escribe 'trace' para ver el resumen de la sesión.")
     print(f"{'=' * 50}\n")
+
+    # Inicializar callback de observabilidad
+    callback = AlterEgoCallback(verbose=True)
 
     agent = AlterEgoAgent(config)
     agent.setup()
@@ -152,32 +157,40 @@ def run_chat(config: dict):
         try:
             user_input = input("\n  Tú: ").strip()
         except (KeyboardInterrupt, EOFError):
-            print("\n\n  👋 Hasta pronto.")
             break
 
         if not user_input:
             continue
 
         if user_input.lower() in ("salir", "exit", "quit", "q"):
-            print("\n  👋 Hasta pronto, Pablo.")
             break
 
-        # Obtener respuesta del agente
+        # Comando especial: ver resumen
+        if user_input.lower() == "trace":
+            callback.print_summary()
+            continue
+
         try:
-            response = agent.chat(user_input, chat_history)
+            response = agent.chat(
+                user_input,
+                chat_history,
+                callbacks=[callback],
+            )
         except Exception as e:
             print(f"\n  ❌ Error: {e}")
             continue
 
         print(f"\n  alterEgo: {response}")
 
-        # Guardar en historial
         chat_history.append({"role": "user", "content": user_input})
         chat_history.append({"role": "assistant", "content": response})
 
-        # Limitar historial para no exceder tokens
         if len(chat_history) > 20:
             chat_history = chat_history[-20:]
+
+    # Resumen final
+    callback.print_summary()
+    print("  👋 Hasta pronto.\n")
 
 
 # ── QUERY ──

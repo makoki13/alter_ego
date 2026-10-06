@@ -52,7 +52,12 @@ class AlterEgoAgent:
         assert self.agent is not None
         return self.agent
 
-    def chat(self, user_input: str, chat_history: list | None = None) -> str:
+    def chat(
+        self,
+        user_input: str,
+        chat_history: list | None = None,
+        callbacks: list | None = None,
+    ) -> str:
         """Envía un mensaje al agente y devuelve la respuesta."""
         agent = self._get_agent()
 
@@ -64,12 +69,17 @@ class AlterEgoAgent:
 
         messages.append(HumanMessage(content=user_input))
 
-        result = agent.invoke({"messages": messages})
+        # Config con callbacks
+        config: dict[str, Any] = {}
+        if callbacks:
+            config["callbacks"] = callbacks
+
+        result = agent.invoke({"messages": messages}, config=config)
 
         ai_messages = [m for m in result["messages"] if m.type == "ai" and m.content]
         return ai_messages[-1].content if ai_messages else ""
 
-    def generate_biography(self) -> str:
+    def generate_biography(self, callbacks: list | None = None) -> str:
         """Genera la biografía usando el agente con múltiples búsquedas."""
         agent = self._get_agent()
 
@@ -90,9 +100,14 @@ class AlterEgoAgent:
             "4. Extensión: entre 600 y 1200 palabras. Formato Markdown."
         )
 
-        result = agent.invoke({
-            "messages": [HumanMessage(content=prompt)],
-        })
+        config: dict[str, Any] = {}
+        if callbacks:
+            config["callbacks"] = callbacks
+
+        result = agent.invoke(
+            {"messages": [HumanMessage(content=prompt)]},
+            config=config,
+        )
 
         ai_messages = [m for m in result["messages"] if m.type == "ai" and m.content]
         return ai_messages[-1].content if ai_messages else ""
