@@ -1,5 +1,5 @@
 """
-alterEgo - Herramienta: buscar en la memoria.
+alterEgo - Herramienta: buscar en la memoria vectorial.
 """
 
 from langchain_core.tools import tool
@@ -14,7 +14,8 @@ def create_search_tool(memory: VectorMemory):
     def search_memory(query: str) -> str:
         """Busca en los recuerdos y datos personales del usuario.
         Úsala cuando necesites información sobre la vida, experiencias,
-        personas, lugares o eventos del usuario."""
+        personas, lugares, eventos o cualquier dato personal.
+        Ejemplo: query='ciclismo' o query='infancia en el pueblo'"""
         results = memory.search(query, top_k=5)
         if not results:
             return "No se encontraron recuerdos relevantes."

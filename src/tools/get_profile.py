@@ -11,7 +11,8 @@ def create_profile_tool(profile_data: dict):
     @tool
     def get_profile() -> str:
         """Devuelve información básica del perfil del usuario:
-        nombre, profesión, tono, aficiones."""
+        nombre, profesión, tono, aficiones.
+        Úsala siempre al inicio para saber quién eres."""
         parts = []
         if profile_data.get("name"):
             parts.append(f"Nombre: {profile_data['name']}")
@@ -20,7 +21,16 @@ def create_profile_tool(profile_data: dict):
         if profile_data.get("tone"):
             parts.append(f"Tono: {profile_data['tone']}")
         if profile_data.get("interests"):
-            parts.append(f"Aficiones: {', '.join(profile_data['interests'])}")
+            interests = profile_data["interests"]
+            if isinstance(interests, list):
+                parts.append(f"Aficiones: {', '.join(interests)}")
+            else:
+                parts.append(f"Aficiones: {interests}")
+        if profile_data.get("boundaries"):
+            parts.append(f"Temas a evitar: {', '.join(profile_data['boundaries'])}")
+
+        if not parts:
+            return "No hay información de perfil disponible."
         return "\n".join(parts)
 
     return get_profile
