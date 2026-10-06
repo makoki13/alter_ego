@@ -6,9 +6,9 @@ Almacena embeddings de todos los registros y permite búsqueda semántica.
 from pathlib import Path
 from typing import Any
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
+from langchain_huggingface import HuggingFaceEmbeddings
 
 
 class VectorMemory:

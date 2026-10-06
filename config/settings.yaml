@@ -1,3 +1,12 @@
+# ============================================
+# alterEgo - Configuración principal
+# ============================================
+
+project:
+  name: "alterEgo"
+  version: "0.1.0"
+  language: "es"
+
 sources:
   disk:
     enabled: true
