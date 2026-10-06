@@ -139,26 +139,45 @@ def run_chat(config: dict):
     from src.agent.alter_ego_agent import AlterEgoAgent
 
     print(f"\n{'=' * 50}")
-    print("  🎭 alterEgo - Chat")
+    print("  🎭 alterEgo - Chat interactivo")
     print("  Escribe 'salir' para terminar.")
     print(f"{'=' * 50}\n")
 
     agent = AlterEgoAgent(config)
     agent.setup()
 
-    chat_history = []
+    chat_history: list[dict[str, str]] = []
 
     while True:
-        user_input = input("\n  Tú: ").strip()
-        if user_input.lower() in ("salir", "exit", "quit"):
-            print("\n  👋 Hasta pronto.")
+        try:
+            user_input = input("\n  Tú: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\n\n  👋 Hasta pronto.")
             break
 
-        response = agent.chat(user_input, chat_history)
+        if not user_input:
+            continue
+
+        if user_input.lower() in ("salir", "exit", "quit", "q"):
+            print("\n  👋 Hasta pronto, Pablo.")
+            break
+
+        # Obtener respuesta del agente
+        try:
+            response = agent.chat(user_input, chat_history)
+        except Exception as e:
+            print(f"\n  ❌ Error: {e}")
+            continue
+
         print(f"\n  alterEgo: {response}")
 
+        # Guardar en historial
         chat_history.append({"role": "user", "content": user_input})
         chat_history.append({"role": "assistant", "content": response})
+
+        # Limitar historial para no exceder tokens
+        if len(chat_history) > 20:
+            chat_history = chat_history[-20:]
 
 
 # ── QUERY ──
@@ -190,6 +209,8 @@ def run_query(config: dict, query: str):
         print(f"      {doc.page_content[:150]}")
         print()
 
+
+
 # ── MAIN ──
 
 def main():
@@ -198,6 +219,7 @@ def main():
     parser.add_argument("--build-index", action="store_true")
     parser.add_argument("--query", type=str)
     parser.add_argument("--generate", choices=["biography"])
+    parser.add_argument("--chat", action="store_true")
     args = parser.parse_args()
 
     config = load_config()
@@ -211,6 +233,8 @@ def main():
         run_query(config, args.query)
     elif args.generate == "biography":
         run_biography(config)
+    elif args.chat:
+        run_chat(config)
     else:
         parser.print_help()
 
