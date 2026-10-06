@@ -1,0 +1,1 @@
+"""Memoria vectorial de alterEgo."""

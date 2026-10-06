@@ -78,6 +78,7 @@ def run_collect(config: dict, source: str):
             print(f"  ✅ {len(records)} registros\n")
 
 
+
 # ── ÍNDICE VECTORIAL ──
 
 def run_build_index(config: dict):
@@ -96,6 +97,10 @@ def run_build_index(config: dict):
     memory = VectorMemory(config)
     memory.build_from_records(records)
     print("\n✅ Índice construido.")
+
+    count = memory.get_document_count()
+    print(f"\n✅ Índice construido: {count} vectores.")
+    print("   Ya puedes usar: python main.py --query \"tu pregunta\"")
 
 
 # ── GENERAR BIOGRAFÍA ──
@@ -165,21 +170,28 @@ def run_query(config: dict, query: str):
     """Consulta directa al índice vectorial."""
     from src.memory.vector_memory import VectorMemory
 
+    print(f"\n{'=' * 50}")
+    print("  alterEgo - Consulta semántica")
+    print(f"{'=' * 50}\n")
+
     memory = VectorMemory(config)
     if not memory.load():
-        print("❌ No hay índice. Ejecuta: python main.py --build-index")
+        print("❌ No hay índice. Ejecuta primero: python main.py --build-index")
         return
 
-    results = memory.search(query, top_k=5)
-    print(f"\n  Consulta: \"{query}\"")
+    results = memory.search_with_scores(query, top_k=5)
+
+    print(f"  Consulta: \"{query}\"")
     print(f"  Resultados: {len(results)}\n")
 
-    for i, doc in enumerate(results, 1):
+    for i, (doc, score) in enumerate(results, 1):
         source = doc.metadata.get("source", "?")
         date = doc.metadata.get("date", "")[:10]
-        print(f"  [{i}] [{source}] [{date}] {doc.page_content[:150]}...")
+        rtype = doc.metadata.get("type", "?")
+        # FAISS IP: score más alto = más similar
+        print(f"  [{i}] score={score:.4f} [{source}/{rtype}] [{date}]")
+        print(f"      {doc.page_content[:150]}")
         print()
-
 
 # ── MAIN ──
 
@@ -187,8 +199,6 @@ def main():
     parser = argparse.ArgumentParser(description="🎭 alterEgo")
     parser.add_argument("--collect", choices=["disk", "x_twitter", "telegram", "all"])
     parser.add_argument("--build-index", action="store_true")
-    parser.add_argument("--generate", choices=["biography"])
-    parser.add_argument("--chat", action="store_true")
     parser.add_argument("--query", type=str)
     args = parser.parse_args()
 
@@ -199,15 +209,10 @@ def main():
         run_collect(config, args.collect)
     elif args.build_index:
         run_build_index(config)
-    elif args.generate == "biography":
-        run_biography(config)
-    elif args.chat:
-        run_chat(config)
     elif args.query:
         run_query(config, args.query)
     else:
         parser.print_help()
-
 
 if __name__ == "__main__":
     main()
