@@ -11,6 +11,7 @@ data/vectors/
 
 # Salidas generadas
 output/
+harness/reports/
 
 # Python
 __pycache__/
