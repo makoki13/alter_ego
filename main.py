@@ -223,6 +223,52 @@ def run_query(config: dict, query: str):
         print()
 
 
+# -- run_full_pipeline --
+
+def run_full_pipeline(config: dict):
+    """Pipeline completo: recolectar todo + reconstruir índice."""
+    from src.memory.vector_memory import VectorMemory
+
+    print(f"\n{'=' * 60}")
+    print("  alterEgo - Pipeline completo")
+    print(f"{'=' * 60}")
+
+    # 1. Recolectar todas las fuentes
+    print(f"\n{'─' * 60}")
+    print("  [1/3] Recolectando datos...")
+    print(f"{'─' * 60}")
+    run_collect(config, "all")
+
+    # 2. Reconstruir índice
+    print(f"\n{'─' * 60}")
+    print("  [2/3] Reconstruyendo índice vectorial...")
+    print(f"{'─' * 60}")
+    records = load_all_records()
+    if not records:
+        print("❌ No hay registros.")
+        return
+
+    memory = VectorMemory(config)
+    memory.build_from_records(records)
+
+    # 3. Verificación
+    print(f"\n{'─' * 60}")
+    print("  [3/3] Verificación")
+    print(f"{'─' * 60}")
+    count = memory.get_document_count()
+    print(f"  📊 Vectores en el índice: {count}")
+
+    # Búsqueda de prueba
+    test_queries = ["ciclismo", "Beatles", "trabajo informática"]
+    for q in test_queries:
+        results = memory.search(q, top_k=3)
+        sources = set(doc.metadata.get("source", "?") for doc in results)
+        print(f"  🔍 '{q}' → {len(results)} resultados (fuentes: {', '.join(sources)})")
+
+    print(f"\n{'=' * 60}")
+    print(f"  ✅ Pipeline completado. Índice listo con {count} vectores.")
+    print(f"{'=' * 60}\n")
+
 
 # ── MAIN ──
 
@@ -233,6 +279,7 @@ def main():
     parser.add_argument("--query", type=str)
     parser.add_argument("--generate", choices=["biography"])
     parser.add_argument("--chat", action="store_true")
+    parser.add_argument("--full-pipeline", action="store_true")
     args = parser.parse_args()
 
     config = load_config()
@@ -248,8 +295,10 @@ def main():
         run_biography(config)
     elif args.chat:
         run_chat(config)
+    elif args.full_pipeline:
+        run_full_pipeline(config)
     else:
         parser.print_help()
-
+        
 if __name__ == "__main__":
     main()
