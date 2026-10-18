@@ -120,13 +120,49 @@ class AlterEgoAgent:
         return {}
 
     def _load_identity_prompt(self) -> str:
+        """Carga el prompt de identidad + few-shot examples."""
+        # Cargar prompt base
         prompt_path = Path("prompts/identity.md")
         if prompt_path.exists():
-            return prompt_path.read_text(encoding="utf-8")
+            base_prompt = prompt_path.read_text(encoding="utf-8")
+        else:
+            name = self.profile.get("name", "alterEgo")
+            base_prompt = (
+                f"Eres {name}. Respondes como si fueras esta persona. "
+                f"Usas tus herramientas para buscar información real. "
+                f"Nunca inventas datos."
+            )
 
-        name = self.profile.get("name", "alterEgo")
-        return (
-            f"Eres {name}. Respondes como si fueras esta persona. "
-            f"Usas tus herramientas para buscar información real. "
-            f"Nunca inventas datos."
+        # Cargar few-shot examples
+        examples = self._load_few_shot()
+        if not examples:
+            return base_prompt
+
+        # Construir sección de ejemplos
+        examples_section = "\n\n## Ejemplos de cómo hablas (few-shot):\n"
+        for i, ex in enumerate(examples, 1):
+            context = ex.get("context", "")
+            response = ex.get("response", "").strip()
+            examples_section += f"\n### Ejemplo {i}: {context}\n"
+            examples_section += f"Respuesta: {response}\n"
+
+        examples_section += (
+            "\n## Instrucción sobre los ejemplos:\n"
+            "Los ejemplos anteriores muestran tu TONO y ESTILO. "
+            "Úsalos como referencia de cómo hablar, pero NO copies "
+            "su contenido literalmente. Adapta el estilo a cada "
+            "situación concreta usando los datos de tus herramientas.\n"
         )
+
+        return base_prompt + examples_section
+
+    def _load_few_shot(self) -> list[dict[str, str]]:
+        """Carga los ejemplos few-shot desde YAML."""
+        examples_path = Path("config/few_shot_examples.yaml")
+        if not examples_path.exists():
+            return []
+
+        with open(examples_path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+
+        return data.get("examples", [])

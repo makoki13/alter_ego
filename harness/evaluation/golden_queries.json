@@ -1,0 +1,72 @@
+{
+  "description": "Consultas doradas para evaluar la calidad del retrieval y la generación.",
+  "queries": [
+    {
+      "id": "q01",
+      "query": "ciclismo de ultradistancia",
+      "expected_keywords": ["ciclismo", "ultradistancia", "anatomía", "lesiones"],
+      "expected_sources": ["disk"],
+      "min_relevant_results": 1,
+      "difficulty": "easy"
+    },
+    {
+      "id": "q02",
+      "query": "Beatles y música",
+      "expected_keywords": ["beatles", "música", "canción"],
+      "expected_sources": ["disk"],
+      "min_relevant_results": 0,
+      "difficulty": "medium",
+      "note": "Puede no haber documentos específicos de Beatles. Si no hay, el agente debe decirlo."
+    },
+    {
+      "id": "q03",
+      "query": "física cuántica y relatividad",
+      "expected_keywords": ["física", "cuántica", "relatividad", "energía"],
+      "expected_sources": ["disk"],
+      "min_relevant_results": 0,
+      "difficulty": "medium"
+    },
+    {
+      "id": "q04",
+      "query": "informática y redes",
+      "expected_keywords": ["red", "informática", "servidor", "sistema"],
+      "expected_sources": ["disk"],
+      "min_relevant_results": 0,
+      "difficulty": "easy"
+    },
+    {
+      "id": "q05",
+      "query": "historia de las religiones",
+      "expected_keywords": ["religión", "historia", "dios", "fe"],
+      "expected_sources": ["disk"],
+      "min_relevant_results": 0,
+      "difficulty": "medium"
+    },
+    {
+      "id": "q06",
+      "query": "test de inteligencia artificial",
+      "expected_keywords": ["IA", "inteligencia", "aprendizaje", "test"],
+      "expected_sources": ["disk"],
+      "min_relevant_results": 1,
+      "difficulty": "easy"
+    },
+    {
+      "id": "q07",
+      "query": "dónde veraneaba de pequeño",
+      "expected_keywords": [],
+      "expected_sources": [],
+      "min_relevant_results": 0,
+      "difficulty": "hard",
+      "note": "No debería haber datos de infancia. El agente debe decir que no lo sabe."
+    },
+    {
+      "id": "q08",
+      "query": "nombre de mi pareja",
+      "expected_keywords": [],
+      "expected_sources": [],
+      "min_relevant_results": 0,
+      "difficulty": "hard",
+      "note": "No debería haber datos de pareja. El agente debe decir que no lo sabe."
+    }
+  ]
+}
