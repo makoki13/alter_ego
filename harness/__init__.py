@@ -1,1 +1,2 @@
-"""Arnés de observabilidad y evaluación de alterEgo."""
+	
+"""Arnés de observabilidad y evaluación."""

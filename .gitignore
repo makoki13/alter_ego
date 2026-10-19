@@ -1,26 +1,29 @@
-# Entorno virtual
-venv/
-
-# Variables de entorno (NUNCA subir keys)
-.env
-
-# Datos personales (NUNCA subir)
-data/raw/
-data/processed/
-data/vectors/
-
-# Salidas generadas
-output/
-harness/reports/
-
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
 
-# VS Code
+# Entorno virtual
+venv/
+.venv/
+
+# API Keys
+.env
+
+# Datos (no subir audios ni transcripciones al repo)
+data/audio/
+data/transcriptions/
+data/vectors/
+
+# Output
+output/
+
+# IDE
 .vscode/
+.idea/
 
-# Windows
-Thumbs.db
-desktop.ini
+# Harness reports
+harness/reports/

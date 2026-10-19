@@ -1,40 +1,21 @@
 # ============================================
-# alterEgo - Configuración principal
+# alter-ego - Configuración principal
 # ============================================
 
 project:
-  name: "alterEgo"
-  version: "0.1.0"
+  name: "alter-ego"
+  version: "2.0.0"
   language: "es"
 
-sources:
-  disk:
-    enabled: true
-    paths:
-      - path: "C:\\Users\\elcor\\OneDrive\\Documentos"
-        type: "documents"
-        extensions: [".txt", ".md", ".docx", ".pdf"]
-      - path: "C:\\Users\\elcor\\OneDrive\\Imágenes"
-        type: "images"
-        extensions: [".jpg", ".jpeg", ".png", ".bmp", ".heic"]
-    max_depth: 5
-    max_file_size_mb: 50
+# --- Transcripción de audio ---
+audio:
+  input_dir: "data/audio"
+  output_dir: "data/transcriptions"
+  supported_formats: [".m4a", ".mp3", ".wav", ".ogg"]
+  whisper_model: "whisper-large-v3-turbo"
+  language: "es"
 
-  gdrive:
-    enabled: false
-    mode: "manual"
-    local_folder: "data/raw/gdrive"
-
-  x_twitter:
-    enabled: true
-    archive_path: "data/raw/x_twitter"
-
-  telegram:
-    enabled: true
-    group_name: "Nombre de tu grupo"    # ← pon el nombre real
-    export_path: "data/raw/telegram"
-
-  # --- Almacenamiento vectorial ---
+# --- Almacenamiento vectorial ---
 vector_store:
   provider: "faiss"
   path: "data/vectors"
@@ -42,16 +23,19 @@ vector_store:
   dimension: 384
   batch_size: 64
 
-# --- RAG ---
-rag:
-  enabled: true
-  top_k: 15
-  biography_queries:
-    - "infancia, niñez, familia, padres, pueblo, casa"
-    - "trabajo, profesión, carrera, empresa, ingeniería, redes"
-    - "aficiones, hobbies, deportes, ciclismo, bicicleta"
-    - "amigos, relaciones, personas importantes, pareja"
-    - "viajes, lugares, vacaciones, verano"
-    - "estudios, formación, universidad, aprendizaje"
-    - "tecnología, software, programación, informática"
-    - "momentos importantes, recuerdos, anécdotas"
+# --- LLM ---
+llm:
+  provider: "groq"
+  model: "openai/gpt-oss-120b"
+  api_key_env: "GROQ_API_KEY"
+  max_tokens: 4096
+  temperature: 0.7
+
+# --- Agente (Deep Agent harness) ---
+agent:
+  max_iterations: 10
+  verbose: true
+
+# --- Output ---
+output:
+  biography_path: "output/biografia.md"

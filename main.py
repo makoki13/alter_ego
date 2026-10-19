@@ -1,12 +1,12 @@
 """
-alterEgo - Punto de entrada principal (LangChain edition).
+alter-ego - Punto de entrada principal.
 Uso:
-  python main.py --collect disk
-  python main.py --collect all
-  python main.py --build-index
-  python main.py --generate biography
-  python main.py --chat
-  python main.py --query "¿Dónde veraneaba?"
+  python main.py --transcribe          # Transcribir audios nuevos
+  python main.py --store               # Indexar transcripciones en FAISS
+  python main.py --process-audio       # Transcribir + indexar en un paso
+  python main.py --biography           # Generar biografía
+  python main.py --assistant           # Asistente personal (chat)
+  python main.py --query "pregunta"    # Consulta directa al índice
 """
 
 import sys
@@ -15,290 +15,101 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import argparse
-import json
 
 import yaml
 
 
 def load_config() -> dict:
-    with open("config/settings.yaml", encoding="utf-8") as f:
+    config_path = Path("config/settings.yaml")
+    if not config_path.exists():
+        print("❌ No se encuentra config/settings.yaml")
+        sys.exit(1)
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
-def load_all_records() -> list[dict]:
-    """Combina todos los registros procesados."""
-    processed_dir = Path("data/processed")
-    all_records = []
-    for json_file in sorted(processed_dir.glob("*_records.json")):
-        with open(json_file, encoding="utf-8") as f:
-            records = json.load(f)
-        print(f"  📂 {json_file.name}: {len(records)} registros")
-        all_records.extend(records)
-    print(f"  📚 Total: {len(all_records)} registros\n")
-    return all_records
+# ── FASE 2: Transcripción ──
+
+def run_transcribe(config: dict):
+    """Transcribe todos los audios nuevos en data/audio/."""
+    # Se implementará en Fase 2
+    print("\n  ⬜ Transcripción: pendiente de implementar (Fase 2)")
 
 
-# ── COLECTORES (sin cambios, usan nuestro código) ──
+# ── FASE 3: Almacenamiento ──
 
-def run_collect(config: dict, source: str):
-    """Ejecuta colectores."""
-    if source in ("disk", "all"):
-        from src.collectors.disk_collector import DiskCollector
-        cfg = config["sources"]["disk"]
-        collector = DiskCollector(cfg, Path("data/raw/disk"), Path("data/processed"))
-        print("\n  📂 Recolectando disco...")
-        count = collector.collect()
-        records = collector.process()
-        with open("data/processed/disk_records.json", "w", encoding="utf-8") as f:
-            json.dump(records, f, ensure_ascii=False, indent=2)
-        print(f"  ✅ {len(records)} registros\n")
-
-    if source in ("x_twitter", "all"):
-        from src.collectors.x_collector import XCollector
-        cfg = config["sources"]["x_twitter"]
-        collector = XCollector(cfg, Path("data/raw/x_twitter"), Path("data/processed"))
-        print("\n  🐦 Recolectando X/Twitter...")
-        count = collector.collect()
-        if count > 0:
-            records = collector.process()
-            with open("data/processed/x_records.json", "w", encoding="utf-8") as f:
-                json.dump(records, f, ensure_ascii=False, indent=2)
-            print(f"  ✅ {len(records)} registros\n")
-
-    if source in ("telegram", "all"):
-        from src.collectors.telegram_collector import TelegramCollector
-        cfg = config["sources"]["telegram"]
-        collector = TelegramCollector(cfg, Path("data/raw/telegram"), Path("data/processed"))
-        print("\n  💬 Recolectando Telegram...")
-        count = collector.collect()
-        if count > 0:
-            records = collector.process()
-            with open("data/processed/telegram_records.json", "w", encoding="utf-8") as f:
-                json.dump(records, f, ensure_ascii=False, indent=2)
-            print(f"  ✅ {len(records)} registros\n")
+def run_store(config: dict):
+    """Indexa todas las transcripciones en FAISS."""
+    # Se implementará en Fase 3
+    print("\n  ⬜ Almacenamiento: pendiente de implementar (Fase 3)")
 
 
-
-# ── ÍNDICE VECTORIAL ──
-
-def run_build_index(config: dict):
-    """Construye el índice FAISS usando LangChain."""
-    from src.memory.vector_memory import VectorMemory
-
-    print(f"\n{'=' * 50}")
-    print("  alterEgo - Construir índice vectorial")
-    print(f"{'=' * 50}\n")
-
-    records = load_all_records()
-    if not records:
-        print("❌ No hay registros. Ejecuta: python main.py --collect all")
-        return
-
-    memory = VectorMemory(config)
-    memory.build_from_records(records)
-    print("\n✅ Índice construido.")
-
-    count = memory.get_document_count()
-    print(f"\n✅ Índice construido: {count} vectores.")
-    print("   Ya puedes usar: python main.py --query \"tu pregunta\"")
+def run_process_audio(config: dict):
+    """Pipeline completo: transcribir + almacenar."""
+    run_transcribe(config)
+    run_store(config)
 
 
-# ── GENERAR BIOGRAFÍA ──
+# ── FASE 5: Biografía ──
 
 def run_biography(config: dict):
-    """Genera biografía usando el agente LangChain."""
-    from src.agent.alter_ego_agent import AlterEgoAgent
-
-    print(f"\n{'=' * 50}")
-    print("  alterEgo - Generación de biografía")
-    print(f"{'=' * 50}\n")
-
-    agent = AlterEgoAgent(config)
-    agent.setup()
-
-    print("  🤖 Generando biografía (puede tardar 30-60 segundos)...\n")
-    biography = agent.generate_biography()
-
-    # Guardar
-    output_path = Path("output/biografia.md")
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(biography)
-
-    print(f"\n{'=' * 50}")
-    print(f"  💾 Guardado en: {output_path}")
-    print(f"{'=' * 50}\n")
-    print(biography[:500])
-    print("...")
+    """Genera la biografía a partir de las transcripciones."""
+    # Se implementará en Fase 5
+    print("\n  ⬜ Biografía: pendiente de implementar (Fase 5)")
 
 
-# ── CHAT ──
+# ── FASE 6: Asistente ──
 
-def run_chat(config: dict):
-    """Chat interactivo con alterEgo + observabilidad."""
-    from harness.callbacks import AlterEgoCallback
-    from src.agent.alter_ego_agent import AlterEgoAgent
-
-    print(f"\n{'=' * 50}")
-    print("  🎭 alterEgo - Chat interactivo")
-    print("  Escribe 'salir' para terminar.")
-    print("  Escribe 'trace' para ver el resumen de la sesión.")
-    print(f"{'=' * 50}\n")
-
-    # Inicializar callback de observabilidad
-    callback = AlterEgoCallback(verbose=True)
-
-    agent = AlterEgoAgent(config)
-    agent.setup()
-
-    chat_history: list[dict[str, str]] = []
-
-    while True:
-        try:
-            user_input = input("\n  Tú: ").strip()
-        except (KeyboardInterrupt, EOFError):
-            break
-
-        if not user_input:
-            continue
-
-        if user_input.lower() in ("salir", "exit", "quit", "q"):
-            break
-
-        # Comando especial: ver resumen
-        if user_input.lower() == "trace":
-            callback.print_summary()
-            continue
-
-        try:
-            response = agent.chat(
-                user_input,
-                chat_history,
-                callbacks=[callback],
-            )
-        except Exception as e:
-            print(f"\n  ❌ Error: {e}")
-            continue
-
-        print(f"\n  alterEgo: {response}")
-
-        chat_history.append({"role": "user", "content": user_input})
-        chat_history.append({"role": "assistant", "content": response})
-
-        if len(chat_history) > 20:
-            chat_history = chat_history[-20:]
-
-    # Resumen final
-    callback.print_summary()
-    print("  👋 Hasta pronto.\n")
+def run_assistant(config: dict):
+    """Chat interactivo con el asistente personal."""
+    # Se implementará en Fase 6
+    print("\n  ⬜ Asistente: pendiente de implementar (Fase 6)")
 
 
-# ── QUERY ──
+# ── Query ──
 
 def run_query(config: dict, query: str):
     """Consulta directa al índice vectorial."""
-    from src.memory.vector_memory import VectorMemory
-
-    print(f"\n{'=' * 50}")
-    print("  alterEgo - Consulta semántica")
-    print(f"{'=' * 50}\n")
-
-    memory = VectorMemory(config)
-    if not memory.load():
-        print("❌ No hay índice. Ejecuta primero: python main.py --build-index")
-        return
-
-    results = memory.search_with_scores(query, top_k=5)
-
-    print(f"  Consulta: \"{query}\"")
-    print(f"  Resultados: {len(results)}\n")
-
-    for i, (doc, score) in enumerate(results, 1):
-        source = doc.metadata.get("source", "?")
-        date = doc.metadata.get("date", "")[:10]
-        rtype = doc.metadata.get("type", "?")
-        # FAISS IP: score más alto = más similar
-        print(f"  [{i}] score={score:.4f} [{source}/{rtype}] [{date}]")
-        print(f"      {doc.page_content[:150]}")
-        print()
-
-
-# -- run_full_pipeline --
-
-def run_full_pipeline(config: dict):
-    """Pipeline completo: recolectar todo + reconstruir índice."""
-    from src.memory.vector_memory import VectorMemory
-
-    print(f"\n{'=' * 60}")
-    print("  alterEgo - Pipeline completo")
-    print(f"{'=' * 60}")
-
-    # 1. Recolectar todas las fuentes
-    print(f"\n{'─' * 60}")
-    print("  [1/3] Recolectando datos...")
-    print(f"{'─' * 60}")
-    run_collect(config, "all")
-
-    # 2. Reconstruir índice
-    print(f"\n{'─' * 60}")
-    print("  [2/3] Reconstruyendo índice vectorial...")
-    print(f"{'─' * 60}")
-    records = load_all_records()
-    if not records:
-        print("❌ No hay registros.")
-        return
-
-    memory = VectorMemory(config)
-    memory.build_from_records(records)
-
-    # 3. Verificación
-    print(f"\n{'─' * 60}")
-    print("  [3/3] Verificación")
-    print(f"{'─' * 60}")
-    count = memory.get_document_count()
-    print(f"  📊 Vectores en el índice: {count}")
-
-    # Búsqueda de prueba
-    test_queries = ["ciclismo", "Beatles", "trabajo informática"]
-    for q in test_queries:
-        results = memory.search(q, top_k=3)
-        sources = set(doc.metadata.get("source", "?") for doc in results)
-        print(f"  🔍 '{q}' → {len(results)} resultados (fuentes: {', '.join(sources)})")
-
-    print(f"\n{'=' * 60}")
-    print(f"  ✅ Pipeline completado. Índice listo con {count} vectores.")
-    print(f"{'=' * 60}\n")
+    # Se implementará en Fase 3
+    print("\n  ⬜ Query: pendiente de implementar (Fase 3)")
 
 
 # ── MAIN ──
 
 def main():
-    parser = argparse.ArgumentParser(description="🎭 alterEgo")
-    parser.add_argument("--collect", choices=["disk", "x_twitter", "telegram", "all"])
-    parser.add_argument("--build-index", action="store_true")
-    parser.add_argument("--query", type=str)
-    parser.add_argument("--generate", choices=["biography"])
-    parser.add_argument("--chat", action="store_true")
-    parser.add_argument("--full-pipeline", action="store_true")
+    parser = argparse.ArgumentParser(description="🎭 alter-ego")
+    parser.add_argument("--transcribe", action="store_true",
+                        help="Transcribir audios nuevos")
+    parser.add_argument("--store", action="store_true",
+                        help="Indexar transcripciones en FAISS")
+    parser.add_argument("--process-audio", action="store_true",
+                        help="Transcribir + indexar en un paso")
+    parser.add_argument("--biography", action="store_true",
+                        help="Generar biografía")
+    parser.add_argument("--assistant", action="store_true",
+                        help="Asistente personal (chat)")
+    parser.add_argument("--query", type=str,
+                        help="Consulta directa al índice")
     args = parser.parse_args()
 
     config = load_config()
-    print(f"\n🎭 alterEgo v{config['project']['version']} (LangChain)")
+    print(f"\n🎭 {config['project']['name']} v{config['project']['version']}")
 
-    if args.collect:
-        run_collect(config, args.collect)
-    elif args.build_index:
-        run_build_index(config)
+    if args.transcribe:
+        run_transcribe(config)
+    elif args.store:
+        run_store(config)
+    elif args.process_audio:
+        run_process_audio(config)
+    elif args.biography:
+        run_biography(config)
+    elif args.assistant:
+        run_assistant(config)
     elif args.query:
         run_query(config, args.query)
-    elif args.generate == "biography":
-        run_biography(config)
-    elif args.chat:
-        run_chat(config)
-    elif args.full_pipeline:
-        run_full_pipeline(config)
     else:
         parser.print_help()
-        
+
+
 if __name__ == "__main__":
     main()

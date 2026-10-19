@@ -1,1 +1,2 @@
-"""Herramientas del agente alterEgo."""
+	
+"""alter-ego: tu gemelo digital."""

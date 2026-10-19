@@ -1,1 +1,1 @@
-"""Agente alterEgo."""
+"""Agente LangGraph (deep agent)."""

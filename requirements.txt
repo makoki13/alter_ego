@@ -1,13 +1,15 @@
-# LangChain core
-langchain>=0.2.0
-langchain-core>=0.2.0
-langchain-community>=0.2.0
-langchain-groq>=0.1.0
+# LangChain + Deep Agents (LangGraph)
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-groq>=0.2.0
+langgraph>=0.2.0
 
-# Agentes
-langgraph>=0.1.0
+# Audio: transcripción con Groq Whisper
+groq>=0.11.0
 
 # Embeddings + Vector Store
+langchain-huggingface>=0.1.0
 sentence-transformers>=2.2.0
 faiss-cpu>=1.7.4
 
@@ -16,10 +18,5 @@ python-dotenv>=1.0.0
 pyyaml>=6.0.1
 numpy>=1.24.0
 
-# Lectura de documentos
-Pillow>=10.0.0
-python-docx>=1.1.0
-PyPDF2>=3.0.0
-
-# Evaluación (opcional)
-langsmith>=0.1.0
+# Audio (lectura de metadatos m4a)
+mutagen>=1.47.0

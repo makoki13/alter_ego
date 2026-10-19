@@ -1,1 +1,1 @@
-"""Arnés de evaluación de alterEgo."""
+"""Evaluación de calidad."""
