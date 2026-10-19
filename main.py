@@ -32,8 +32,22 @@ def load_config() -> dict:
 
 def run_transcribe(config: dict):
     """Transcribe todos los audios nuevos en data/audio/."""
-    # Se implementará en Fase 2
-    print("\n  ⬜ Transcripción: pendiente de implementar (Fase 2)")
+    from src.collectors.audio_collector import AudioCollector
+
+    print(f"\n{'=' * 50}")
+    print("  alter-ego - Transcripción de audio")
+    print(f"{'=' * 50}\n")
+
+    collector = AudioCollector(config)
+    records = collector.transcribe_all()
+
+    if records:
+        print("\n  ✅ Transcripciones guardadas en: data/transcriptions/")
+        for rec in records:
+            preview = rec["transcription"][:80]
+            print(f"     📝 {rec['filename']}: \"{preview}...\"")
+    else:
+        print("\n  ℹ No se transcribió nada. ¿Hay audios en data/audio/?")
 
 
 # ── FASE 3: Almacenamiento ──
